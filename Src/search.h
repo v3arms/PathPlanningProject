@@ -5,15 +5,17 @@
 #include "environmentoptions.h"
 #include <list>
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <limits>
 #include <chrono>
+#include "container.h"
+
 
 class Search
 {
     public:
         Search();
-        ~Search(void);
+        ~Search();
         SearchResult startSearch(ILogger *Logger, const Map &Map, const EnvironmentOptions &options);
 
     protected:
@@ -31,11 +33,16 @@ class Search
         //so think of the data structures that needed to be used, about the wrap-up classes (if needed)
         //Start with very simple (and ineffective) structures like list or vector and make it work first
         //and only then begin enhancement!
+        inline Node GetSuccessorNode(const Map& Map, int i, int j);
+        void getSuccessors(const Map& Map, const Node& x);
 
 
         SearchResult                    sresult; //This will store the search result
         std::list<Node>                 lppath, hppath; //
 
         //CODE HERE to define other members of the class
+        NodeContainer     nodeContainer;
+        std::vector<Node> adjBuf;
+
 };
 #endif

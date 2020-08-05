@@ -19,7 +19,7 @@ set(SOURCES         config.cpp
                     tinyxml2.cpp
                     xmllogger.cpp)
 
-add_executable(PathPlanning ${HEADERS} ${SOURCES} main.cpp)
+add_executable(PathPlanning ${HEADERS} ${SOURCES} main.cpp container.h container.cpp)
 
 add_library(PPLIB ${HEADERS} ${SOURCES})
 
