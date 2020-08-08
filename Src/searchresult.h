@@ -19,6 +19,7 @@
 //You need to fill BOTH sorts of path (so both lppath and hppath will be flushed to output log).
 
 // A*/Dijkstra naturally generates lppath. One might post-process it by skipping the nodes at which
+//the movement direction does not change to form sections of hppath.
 
 struct SearchResult
 {
