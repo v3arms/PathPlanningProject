@@ -8,6 +8,8 @@
 #include <math.h>
 #include <limits>
 #include <chrono>
+#include "container.h"
+
 
 class Search
 {
@@ -33,9 +35,18 @@ class Search
         //and only then begin enhancement!
 
 
+        float calcHeuristic(const Map& map, const nodeId& from, const nodeId& to, int metrictype = CN_SP_MT_EUCL);
+        float getCost(const Map& map, const nodeId& x, const nodeId& y);
+        void getSuccessors(const Map&, const nodeId& id, const EnvironmentOptions& opts);
+        bool cellAvailable(const Map& map, const nodeId& id);
+        void makePrimaryPath(const Node* node);
+
+
+
         SearchResult                    sresult; //This will store the search result
         std::list<Node>                 lppath, hppath; //
-
         //CODE HERE to define other members of the class
+        nodeContainer node_container;
+        std::vector<nodeId> successors;
 };
 #endif

@@ -1,8 +1,13 @@
 include_directories(../Src)
 
+add_library(CATCH testmain.cpp)
+
 add_executable(testbench testbench.cpp)
+add_executable(usertest usertest.cpp)
 
 target_link_libraries(testbench PPLIB)
+target_link_libraries(usertest PPLIB)
+target_link_libraries(usertest CATCH)
 
 add_test(NAME Test1 COMMAND testbench ../../../TestData/0_test.xml)
 add_test(NAME Test2 COMMAND testbench ../../../TestData/1_test.xml)

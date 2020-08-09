@@ -1,0 +1,46 @@
+<root>
+    <desc>This file contains task for plaining system (Pathfinding)</desc>
+    <map>
+        <title>simple</title>
+        <width>10</width>
+        <height>10</height>
+        <cellsize>5</cellsize>
+        <startx>2</startx>
+        <starty>1</starty>
+        <finishx>8</finishx>
+        <finishy>8</finishy>
+        <grid>
+            <row>0 0 0 0 0 0 0 0 0 0</row>
+            <row>0 0 0 0 0 0 0 0 0 0</row>
+            <row>0 1 1 1 1 1 1 0 1 1</row>
+            <row>0 0 0 0 0 0 0 0 0 0</row>
+            <row>0 0 0 0 0 0 0 0 0 0</row>
+            <row>0 0 0 0 0 0 0 0 0 0</row>
+            <row>0 0 0 0 0 0 0 0 0 0</row>
+            <row>0 0 0 0 0 0 0 0 0 0</row>
+            <row>0 0 0 0 0 0 0 0 0 0</row>
+            <row>0 0 0 0 0 0 0 0 0 0</row>
+        </grid>
+    </map>
+    <algorithm>
+        <metrictype>diagonal</metrictype>
+        <searchtype>astar</searchtype>
+        <hweight>1</hweight>
+        <breakingties>g-max</breakingties>
+        <allowdiagonal>0</allowdiagonal>
+        <allowsqueeze>0</allowsqueeze>
+        <cutcorners>0</cutcorners>
+    </algorithm>
+    <options>
+        <loglevel>0.5</loglevel>
+        <logpath/>
+        <logfilename/>
+    </options>
+    <log>
+        <mapfilename>../Data/0_Mazes4_di_gmax_nad.xml</mapfilename>
+        <summary numberofsteps="28234" nodescreated="28316" length="767" length_scaled="3835" time="0.039266"/>
+        <path/>
+        <lplevel/>
+        <hplevel/>
+    </log>
+</root>

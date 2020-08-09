@@ -17,7 +17,8 @@ set(SOURCES         config.cpp
                     mission.cpp
                     search.cpp
                     tinyxml2.cpp
-                    xmllogger.cpp)
+                    xmllogger.cpp
+                    container.cpp)
 
 add_executable(PathPlanning ${HEADERS} ${SOURCES} main.cpp)
 

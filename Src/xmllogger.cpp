@@ -78,6 +78,7 @@ bool XmlLogger::getLog(const char *FileName, const std::string *LogParams)
     if (loglevel == CN_LP_LEVEL_FULL_WORD || loglevel == CN_LP_LEVEL_MEDIUM_WORD)
         root->InsertEndChild(doc.NewElement(CNS_TAG_LOWLEVEL));
 
+    logparams = *LogParams;
     return true;
 }
 

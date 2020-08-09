@@ -40,6 +40,9 @@ class Map
         int getMapWidth() const;
         double getCellSize() const;
 
+        std::pair<int, int> getStartPoint()  const;
+        std::pair<int, int> getTargetPoint() const;
+
 };
 
 #endif
