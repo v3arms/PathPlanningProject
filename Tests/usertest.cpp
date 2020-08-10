@@ -33,8 +33,8 @@ TEST_CASE("Container") {
     REQUIRE((node == nodeId{0, 1} || node == nodeId{1, 0}));
     REQUIRE(oc.at(node)->g == 1);
 
-    oc.popOpenedMinFValAndClose();
-    oc.popOpenedMinFValAndClose();
+    oc.popOpenedMinFVal();
+    oc.popOpenedMinFVal();
     REQUIRE(oc.openedEmpty());
 
 
@@ -47,14 +47,14 @@ TEST_CASE("Container") {
             node->g;
             node->F;
             std::cout << node->i << " " << node->j << '\n';
-            oc.popOpenedMinFValAndClose();
+            oc.popOpenedMinFVal();
             oc.close(n);
         }
         oc.open({i - 1, i}, 0, 0, NULL);
     }
 
     while(!oc.openedEmpty())
-        oc.popOpenedMinFValAndClose();
+        oc.popOpenedMinFVal();
     
     REQUIRE(!oc.closedEmpty());
     oc.clear();

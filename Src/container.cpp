@@ -17,13 +17,28 @@ nodeContainer::nodeContainer() {
     adds its pointer to opened map
     erases pointer from closed map if present
 */
-void nodeContainer::open(nodeId id, double g, double f, Node* parent) {
+void nodeContainer::open(nodeId id, double g, double f, Node* parent, bool replace) {
     if (node_storage.size() == node_storage.capacity()) {
         reallocate_storage();
     }
+    if (replace) {
+        Node* replaceNode = at(id);
+        if (replaceNode->g != g || replaceNode->F != f || replaceNode->parent != parent) {
+            LOG("Warning : potentially broken priority_queue while replacing node");
+            throw std::runtime_error("above.");
+        }
+            
+        replaceNode->g = g;
+        replaceNode->F = f;
+        replaceNode->parent = parent;
+        opened[id] = replaceNode;
+        closed.erase(id);
+        prqueue.push(replaceNode);
+        return;
+    }
+        
     node_storage.push_back({id.first, id.second, f, g, 0, parent});
     prqueue.push(&node_storage.back());
-
     opened[id] = &node_storage.back();
     closed.erase(id);
 
@@ -89,7 +104,7 @@ nodeId nodeContainer::topOpenedMinFVal() {
 }
 
 
-void nodeContainer::popOpenedMinFValAndClose() {
+void nodeContainer::popOpenedMinFVal() {
     if (prqueue.empty())
         throw std::runtime_error("nodeContainer::popOpenedMinFVal() | Pop from empty queue");
 

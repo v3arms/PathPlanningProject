@@ -30,42 +30,101 @@ SearchResult Search::startSearch(ILogger *Logger, const Map &map, const Environm
             makePrimaryPath(currNode);
             break;
         }
-            
+
+        // breaking ties
         
-        node_container.popOpenedMinFValAndClose();
-        node_container.close(currId);
+        currId = breakTies(CN_SP_BT_GMIN);
+
         getSuccessors(map, currId, options);
         LOG("Start expanding node : {" << currId.first << " " << currId.second << "}");
         for (auto& succId : successors) {
-
             double succGVal = -1;
-            if (node_container.isClosed(succId) || node_container.isOpened(succId))
+            
+            bool   succNodeExists = node_container.isClosed(succId) || node_container.isOpened(succId);
+            if (succNodeExists)
                 succGVal = node_container.at(succId)->g;
             
             double newGVal = currNode->g + getCost(map, currId, succId);
-            if (
-                (!node_container.isClosed(succId) &&
-                !node_container.isOpened(succId)) ||
-                (succGVal > newGVal))
-            {
+            if (!succNodeExists || (succGVal > newGVal)) {
                 node_container.open(
                     succId, 
                     newGVal, 
                     newGVal + calcHeuristic(map, succId, targetId, options.metrictype),
-                    currNode  
+                    currNode
                 );
-                sresult.nodescreated++;
+                if (!succNodeExists)
+                    sresult.nodescreated++;
             }
         }
         sresult.numberofsteps++;
     }
 
     std::chrono::steady_clock::time_point timeEnd = std::chrono::steady_clock::now();
-    sresult.time = std::chrono::duration<double, std::milli>(timeEnd - timeBegin).count();
+    sresult.time = std::chrono::duration<double>(timeEnd - timeBegin).count();
     sresult.hppath = &hppath; //Here is a constant pointer
     sresult.lppath = &lppath;
     sresult.pathlength = lppath.size() - 1;
     return sresult;
+}
+
+
+nodeId Search::breakTies(int mode) {
+    nodeId id = node_container.topOpenedMinFVal();
+    node_container.popOpenedMinFVal();
+    return id;
+}
+
+
+/*
+nodeId Search::breakTies(int mode) {
+    // reusing successors buffer for tied nodes
+    successors.clear();
+
+    nodeId chosenId = node_container.topOpenedMinFVal();
+    double F = node_container.at(chosenId)->F;
+    double g = node_container.at(chosenId)->g;
+    // pop nodes and save them, saving optimal node on the way
+    for (
+        nodeId currId = chosenId; 
+        node_container.at(currId)->F == F;
+        currId = node_container.topOpenedMinFVal()
+    ) {
+        if (mode == CN_SP_BT_GMAX && node_container.at(currId)->g > g && !node_container.isClosed(currId)) {
+            g = node_container.at(currId)->g;
+            chosenId = currId;
+        }
+        if (mode == CN_SP_BT_GMIN && node_container.at(currId)->g < g && !node_container.isClosed(currId)) {
+            g = node_container.at(currId)->g;
+            chosenId = currId;
+        } 
+        
+        if (mode != CN_SP_BT_GMIN && mode != CN_SP_BT_GMAX)
+            throw std::invalid_argument("Search::breakTies() | unsupported mode");
+        
+        if (!node_container.isClosed(currId))
+            successors.push_back(currId);
+        node_container.popOpenedMinFVal();
+        if (node_container.openedEmpty())
+            break;
+    } 
+    // reopening saved nodes except optimal
+    for (const nodeId& currId : successors) {
+        if (currId != chosenId)
+            node_container.open(
+                currId,
+                node_container.at(currId)->g,
+                node_container.at(currId)->F,
+                node_container.at(currId)->parent,
+                true
+            );
+    }
+    return chosenId;
+}
+*/
+
+
+void Search::AStarSearch(const std::string& algo_params, const Map &map, const EnvironmentOptions &options) {
+
 }
 
 
@@ -75,7 +134,7 @@ void Search::makePrimaryPath(const Node* node) {
         lppath.push_front(*node);
         node = node->parent;
     }
-    LOG("Path length : " << lppath.size());
+    LOG("Path length : " << lppath.size() - 1);
     hppath = lppath;
 }
 
@@ -145,7 +204,8 @@ void Search::getSuccessors(const Map& map, const nodeId& id, const EnvironmentOp
 
 
 float Search::getCost(const Map& map, const nodeId& x, const nodeId& y) {
-    return map.getCellSize()*sqrt(
-        (x.first - y.first)*(x.first - y.first) + (x.second - y.second)*(x.second - y.second)
-    );
+    if ((x.first == y.first) || x.second == y.second)
+        return map.getCellSize();
+    else
+        return map.getCellSize() * sqrt(2.0);
 }

@@ -7,6 +7,7 @@
 #include <map>
 #include <queue>
 #include <functional>
+#include <iostream>
 
 
 const int   DefaultPreallocSize  = 1000000;
@@ -35,14 +36,14 @@ class nodeContainer {
 public :
     nodeContainer();
 
-    void open(nodeId id, double g, double f, Node* parent);
+    void open(nodeId id, double g, double f, Node* parent, bool replace = false);
     void close(nodeId id);
     bool openedEmpty() const;
     bool closedEmpty() const;
     bool isOpened(nodeId id) const;
     bool isClosed(nodeId id) const;
     nodeId topOpenedMinFVal();
-    void popOpenedMinFValAndClose();
+    void popOpenedMinFVal();
     Node* at(nodeId);
     void clear();
 

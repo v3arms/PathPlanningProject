@@ -40,7 +40,8 @@ class Search
         void getSuccessors(const Map&, const nodeId& id, const EnvironmentOptions& opts);
         bool cellAvailable(const Map& map, const nodeId& id);
         void makePrimaryPath(const Node* node);
-
+        void AStarSearch(const std::string& algo_params, const Map &map, const EnvironmentOptions &options);
+        nodeId breakTies(int mode);
 
 
         SearchResult                    sresult; //This will store the search result
