@@ -24,7 +24,7 @@ SearchResult Search::startSearch(ILogger *Logger, const Map &map, const Environm
     opened->insert({
         startId.first, 
         startId.second,
-        calcHeuristic(map, startId, targetId),
+        calcHeuristic(map, startId, targetId) * options.hweight,
         0,
         0,
         nullptr
@@ -68,7 +68,7 @@ SearchResult Search::startSearch(ILogger *Logger, const Map &map, const Environm
                 opened->insert({
                     succId.first,
                     succId.second, 
-                    newGVal + calcHeuristic(map, succId, targetId, options.metrictype),
+                    newGVal + calcHeuristic(map, succId, targetId, options.metrictype) * options.hweight,
                     newGVal, 
                     0,
                     &closed->find(currId)
