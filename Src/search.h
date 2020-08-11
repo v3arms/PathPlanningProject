@@ -8,7 +8,7 @@
 #include <math.h>
 #include <limits>
 #include <chrono>
-#include "container.h"
+#include "container_simple.h"
 
 
 class Search
@@ -39,15 +39,19 @@ class Search
         float getCost(const Map& map, const nodeId& x, const nodeId& y);
         void getSuccessors(const Map&, const nodeId& id, const EnvironmentOptions& opts);
         bool cellAvailable(const Map& map, const nodeId& id);
-        void makePrimaryPath(const Node* node);
+        void makePrimaryPath(const Map& map, Node node, const EnvironmentOptions& options);
         void AStarSearch(const std::string& algo_params, const Map &map, const EnvironmentOptions &options);
-        nodeId breakTies(int mode);
-
+        Node breakTies(int mode);
 
         SearchResult                    sresult; //This will store the search result
         std::list<Node>                 lppath, hppath; //
         //CODE HERE to define other members of the class
-        nodeContainer node_container;
         std::vector<nodeId> successors;
+        std::vector<Node>   for_breakties;
+
+        // simpleOpened opened;
+        // simpleClosed closed;
+        openedContainer *opened;
+        closedContainer *closed;
 };
 #endif

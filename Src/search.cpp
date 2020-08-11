@@ -1,57 +1,78 @@
 #include "search.h"
 
 Search::Search()
+: opened(new simpleOpened())
+, closed(new simpleClosed())
 {
 //set defaults here
 }
 
-Search::~Search() {}
+Search::~Search()
+{
+    delete opened;
+    delete closed;
+}
 
 
 SearchResult Search::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options)
 {
-    //need to implement
     std::chrono::steady_clock::time_point timeBegin = std::chrono::steady_clock::now();
 
     nodeId startId  = map.getStartPoint(), 
            targetId = map.getTargetPoint();    
-    node_container.open(startId, 0, calcHeuristic(map, startId, targetId), nullptr);
     
+    opened->insert({
+        startId.first, 
+        startId.second,
+        calcHeuristic(map, startId, targetId),
+        0,
+        0,
+        nullptr
+    });
+
     sresult.nodescreated++;
     sresult.pathfound = false;
+    Node curr, succ_opened, succ_closed, succ;
+    nodeId succId, currId;
     
-    while(!node_container.openedEmpty()) {
+    while(!opened->empty()) {
         LOG("Iteration : " << sresult.numberofsteps);
+        
+        curr   = breakTies(options.gtype);
+        currId = {curr.i, curr.j};
 
-        nodeId currId   = node_container.topOpenedMinFVal();
-        Node*  currNode = node_container.at(currId);
         if (currId == targetId) {
             sresult.pathfound = true;
-            makePrimaryPath(currNode);
+            makePrimaryPath(map, curr, options);
             break;
         }
-
-        // breaking ties
-        
-        currId = breakTies(CN_SP_BT_GMIN);
-
-        getSuccessors(map, currId, options);
+        closed->insert(curr);
+        getSuccessors(map, {curr.i, curr.j}, options);
         LOG("Start expanding node : {" << currId.first << " " << currId.second << "}");
         for (auto& succId : successors) {
             double succGVal = -1;
+
+            succ = closed->end();
+            succ_opened = opened->find(succId);
+            succ_closed = closed->find(succId);
             
-            bool   succNodeExists = node_container.isClosed(succId) || node_container.isOpened(succId);
-            if (succNodeExists)
-                succGVal = node_container.at(succId)->g;
+            bool succNodeExists = (succ_closed != closed->end()) || (succ_opened != opened->end());
+            if (succ_opened != opened->end())
+                succGVal = succ_opened.g;
+            if (succ_closed != closed->end())
+                succGVal = succ_closed.g;
             
-            double newGVal = currNode->g + getCost(map, currId, succId);
+            // double newGVal = curr.g + calcHeuristic(map, {curr.i, curr.j}, succId, options.metrictype);
+            double newGVal = curr.g + getCost(map, {curr.i, curr.j}, succId);
             if (!succNodeExists || (succGVal > newGVal)) {
-                node_container.open(
-                    succId, 
-                    newGVal, 
+                opened->insert({
+                    succId.first,
+                    succId.second, 
                     newGVal + calcHeuristic(map, succId, targetId, options.metrictype),
-                    currNode
-                );
+                    newGVal, 
+                    0,
+                    &closed->find(currId)
+                });
                 if (!succNodeExists)
                     sresult.nodescreated++;
             }
@@ -63,78 +84,64 @@ SearchResult Search::startSearch(ILogger *Logger, const Map &map, const Environm
     sresult.time = std::chrono::duration<double>(timeEnd - timeBegin).count();
     sresult.hppath = &hppath; //Here is a constant pointer
     sresult.lppath = &lppath;
-    sresult.pathlength = lppath.size() - 1;
     return sresult;
 }
 
 
-nodeId Search::breakTies(int mode) {
-    nodeId id = node_container.topOpenedMinFVal();
-    node_container.popOpenedMinFVal();
-    return id;
-}
-
-
 /*
-nodeId Search::breakTies(int mode) {
-    // reusing successors buffer for tied nodes
-    successors.clear();
-
-    nodeId chosenId = node_container.topOpenedMinFVal();
-    double F = node_container.at(chosenId)->F;
-    double g = node_container.at(chosenId)->g;
-    // pop nodes and save them, saving optimal node on the way
-    for (
-        nodeId currId = chosenId; 
-        node_container.at(currId)->F == F;
-        currId = node_container.topOpenedMinFVal()
-    ) {
-        if (mode == CN_SP_BT_GMAX && node_container.at(currId)->g > g && !node_container.isClosed(currId)) {
-            g = node_container.at(currId)->g;
-            chosenId = currId;
-        }
-        if (mode == CN_SP_BT_GMIN && node_container.at(currId)->g < g && !node_container.isClosed(currId)) {
-            g = node_container.at(currId)->g;
-            chosenId = currId;
-        } 
-        
-        if (mode != CN_SP_BT_GMIN && mode != CN_SP_BT_GMAX)
-            throw std::invalid_argument("Search::breakTies() | unsupported mode");
-        
-        if (!node_container.isClosed(currId))
-            successors.push_back(currId);
-        node_container.popOpenedMinFVal();
-        if (node_container.openedEmpty())
-            break;
-    } 
-    // reopening saved nodes except optimal
-    for (const nodeId& currId : successors) {
-        if (currId != chosenId)
-            node_container.open(
-                currId,
-                node_container.at(currId)->g,
-                node_container.at(currId)->F,
-                node_container.at(currId)->parent,
-                true
-            );
-    }
-    return chosenId;
+Node Search::breakTies(int mode) {
+    Node n = opened->top_min_fval();
+    opened->pop_min_fval();
+    return n;
 }
 */
 
 
-void Search::AStarSearch(const std::string& algo_params, const Map &map, const EnvironmentOptions &options) {
 
+Node Search::breakTies(int mode) {
+    // reusing successors buffer for tied nodes
+    for_breakties.clear();
+
+    Node chosen = opened->top_min_fval();
+    // pop nodes and save them, saving optimal node on the way
+    for (
+        Node curr = chosen; 
+        curr.F == chosen.F;
+        curr = opened->top_min_fval()
+    ) {
+        if (mode == CN_SP_BT_GMAX && curr.g > chosen.g) {
+            chosen = curr;
+        }
+        if (mode == CN_SP_BT_GMIN && curr.g < chosen.g) {
+            chosen = curr;
+        } 
+        if (mode != CN_SP_BT_GMIN && mode != CN_SP_BT_GMAX)
+            throw std::invalid_argument("Search::breakTies() | unsupported mode");
+        
+        for_breakties.push_back(curr);
+        opened->pop_min_fval();
+        if (opened->empty())
+            break;
+    } 
+    // reopening saved nodes except optimal
+    for (const Node& curr : for_breakties) {
+        if (curr != chosen)
+            opened->insert(curr);
+    }
+    return chosen;
 }
 
 
-void Search::makePrimaryPath(const Node* node) {
+void Search::makePrimaryPath(const Map& map, Node node, const EnvironmentOptions& options) {
     LOG("Target reached.");
-    while(node != nullptr) {
-        lppath.push_front(*node);
-        node = node->parent;
+    Node bufnode = *node.parent;
+    while(node.parent != nullptr) {
+        bufnode = *node.parent;
+        lppath.push_front(node);
+        sresult.pathlength += getCost(map, {bufnode.i, bufnode.j}, {node.i, node.j});
+        node = *node.parent;
     }
-    LOG("Path length : " << lppath.size() - 1);
+    LOG("Path length : " << lppath.size());
     hppath = lppath;
 }
 
@@ -147,17 +154,21 @@ float Search::calcHeuristic(const Map& map, const nodeId& x, const nodeId& y, in
     double ds, df;
     switch(metrictype) {
         case CN_SP_MT_EUCL :
-            return map.getCellSize()*sqrt(
+            return sqrt(
                 (x.first - y.first)*(x.first - y.first) + (x.second - y.second)*(x.second - y.second)
             );
+
         case CN_SP_MT_MANH :
-            return map.getCellSize()*(abs(x.first - y.first) + abs(x.second - y.second));
+            return (abs(x.first - y.first) + abs(x.second - y.second));
+
         case CN_SP_MT_CHEB :
             return std::max(abs(x.first - y.first), abs(x.second - y.second));
+
         case CN_SP_MT_DIAG :
             df = abs(x.first - y.first),
             ds = abs(x.second - y.second);
-            return std::min(df, ds)*sqrt(2) + abs(df - ds);
+            return std::min(df, ds)*sqrt(2.0) + abs(df - ds);
+
         default :
             return 0;
     }
@@ -181,17 +192,17 @@ void Search::getSuccessors(const Map& map, const nodeId& id, const EnvironmentOp
     if (cellAvailable(map, {x    , y + 1})) successors.push_back({x    , y + 1});
 
     if (opts.allowdiagonal && !opts.cutcorners) {
-        if ((cellAvailable(map, {x - 1, y}) || cellAvailable(map, {x, y - 1})) && cellAvailable(map, {x - 1, y - 1})) successors.push_back({x - 1, y - 1});
-        if ((cellAvailable(map, {x - 1, y}) || cellAvailable(map, {x, y + 1})) && cellAvailable(map, {x - 1, y + 1})) successors.push_back({x - 1, y + 1});
-        if ((cellAvailable(map, {x + 1, y}) || cellAvailable(map, {x, y - 1})) && cellAvailable(map, {x + 1, y - 1})) successors.push_back({x + 1, y - 1});
-        if ((cellAvailable(map, {x + 1, y}) || cellAvailable(map, {x, y + 1})) && cellAvailable(map, {x + 1, y + 1})) successors.push_back({x + 1, y + 1});
-    }
-
-    if (opts.allowdiagonal && opts.cutcorners && !opts.allowsqueeze) {
         if (cellAvailable(map, {x - 1, y}) && cellAvailable(map, {x, y - 1}) && cellAvailable(map, {x - 1, y - 1})) successors.push_back({x - 1, y - 1});
         if (cellAvailable(map, {x - 1, y}) && cellAvailable(map, {x, y + 1}) && cellAvailable(map, {x - 1, y + 1})) successors.push_back({x - 1, y + 1});
         if (cellAvailable(map, {x + 1, y}) && cellAvailable(map, {x, y - 1}) && cellAvailable(map, {x + 1, y - 1})) successors.push_back({x + 1, y - 1});
         if (cellAvailable(map, {x + 1, y}) && cellAvailable(map, {x, y + 1}) && cellAvailable(map, {x + 1, y + 1})) successors.push_back({x + 1, y + 1});
+    }
+
+    if (opts.allowdiagonal && opts.cutcorners && !opts.allowsqueeze) {
+        if ((cellAvailable(map, {x - 1, y}) || cellAvailable(map, {x, y - 1})) && cellAvailable(map, {x - 1, y - 1})) successors.push_back({x - 1, y - 1});
+        if ((cellAvailable(map, {x - 1, y}) || cellAvailable(map, {x, y + 1})) && cellAvailable(map, {x - 1, y + 1})) successors.push_back({x - 1, y + 1});
+        if ((cellAvailable(map, {x + 1, y}) || cellAvailable(map, {x, y - 1})) && cellAvailable(map, {x + 1, y - 1})) successors.push_back({x + 1, y - 1});
+        if ((cellAvailable(map, {x + 1, y}) || cellAvailable(map, {x, y + 1})) && cellAvailable(map, {x + 1, y + 1})) successors.push_back({x + 1, y + 1});
     } 
 
     if (opts.allowdiagonal && opts.cutcorners && opts.allowsqueeze) {
@@ -204,8 +215,8 @@ void Search::getSuccessors(const Map& map, const nodeId& id, const EnvironmentOp
 
 
 float Search::getCost(const Map& map, const nodeId& x, const nodeId& y) {
-    if ((x.first == y.first) || x.second == y.second)
-        return map.getCellSize();
+    if ((x.first == y.first) || (x.second == y.second))
+        return 1;
     else
-        return map.getCellSize() * sqrt(2.0);
+        return sqrt(2.0);
 }

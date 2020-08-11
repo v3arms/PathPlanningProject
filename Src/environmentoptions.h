@@ -5,12 +5,15 @@
 class EnvironmentOptions
 {
 public:
-    EnvironmentOptions(bool AS, bool AD, bool CC, int MT = CN_SP_MT_EUCL);
+    EnvironmentOptions(bool AS, bool AD, bool CC, int MT = CN_SP_MT_EUCL, int GT = CN_SP_BT_GMIN, int HW = 1.0);
     EnvironmentOptions();
     int     metrictype;     //Can be chosen Euclidean, Manhattan, Chebyshev and Diagonal distance
+    int     gtype;
     bool    allowsqueeze;   //Option that allows to move throught "bottleneck"
     bool    allowdiagonal;  //Option that allows to make diagonal moves
     bool    cutcorners;     //Option that allows to make diagonal moves, when one adjacent cell is untraversable
+    double hweight;
+
 
 };
 

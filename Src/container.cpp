@@ -16,6 +16,7 @@ nodeContainer::nodeContainer() {
     adds node to storage (reallocate if needed)
     adds its pointer to opened map
     erases pointer from closed map if present
+
 */
 void nodeContainer::open(nodeId id, double g, double f, Node* parent, bool replace) {
     if (node_storage.size() == node_storage.capacity()) {
@@ -36,12 +37,12 @@ void nodeContainer::open(nodeId id, double g, double f, Node* parent, bool repla
         prqueue.push(replaceNode);
         return;
     }
-        
-    node_storage.push_back({id.first, id.second, f, g, 0, parent});
-    prqueue.push(&node_storage.back());
-    opened[id] = &node_storage.back();
-    closed.erase(id);
-
+    else {
+        node_storage.push_back({id.first, id.second, f, g, 0, parent});
+        prqueue.push(&node_storage.back());
+        opened[id] = &node_storage.back();
+        closed.erase(id);
+    }
 }
 
 

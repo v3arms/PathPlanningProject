@@ -26,35 +26,44 @@ typedef std::pair<int, int> nodeId;
 
 
 // pointer comparator specification for prqueue
+/*
 template<> class std::greater<Node*> {
 public:
     bool operator()(const Node *a, const Node *b) const;
 };
+*/
 
 
-class nodeContainer {
+class openedContainer {
 public :
-    nodeContainer();
+    virtual void insert(const Node& x) = 0;
+    virtual bool erase(const nodeId& x) = 0;
+    virtual const Node& top_min_fval() const = 0;
+    virtual void pop_min_fval() = 0;
+    virtual bool empty() const = 0;
+    virtual void clear() = 0;
+    virtual const Node& find(const nodeId& x) const = 0;
+    virtual ~openedContainer() {};
+    virtual const Node& end() const = 0;
 
-    void open(nodeId id, double g, double f, Node* parent, bool replace = false);
-    void close(nodeId id);
-    bool openedEmpty() const;
-    bool closedEmpty() const;
-    bool isOpened(nodeId id) const;
-    bool isClosed(nodeId id) const;
-    nodeId topOpenedMinFVal();
-    void popOpenedMinFVal();
-    Node* at(nodeId);
-    void clear();
-
-private:
-    std::vector<Node> node_storage;
-    std::map<nodeId, Node*> opened, closed;
-    std::priority_queue<Node*, std::vector<Node*>, std::greater<Node*>> prqueue;
-
-
-    void reallocate_storage();
 };
 
 
-#endif //PATHPLANNING_CONTAINER_H
+class closedContainer {
+public :
+    virtual void insert(const Node& x) = 0;
+    virtual bool erase(const nodeId& x) = 0;
+    virtual const Node& find(const nodeId& x) const = 0;
+    virtual void clear() = 0;
+    virtual bool empty() const = 0;
+    virtual ~closedContainer() {};
+    virtual const Node& end() const = 0;
+
+};
+
+
+bool operator == (const Node& x, const Node& y);
+bool operator != (const Node& x, const Node& y);
+
+
+#endif
