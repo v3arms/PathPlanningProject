@@ -10,7 +10,7 @@ EnvironmentOptions::EnvironmentOptions()
     cutcorners = false;
 }
 
-EnvironmentOptions::EnvironmentOptions(bool AS, bool AD, bool CC, int MT, int GT, int HW)
+EnvironmentOptions::EnvironmentOptions(bool AS, bool AD, bool CC, int MT, int GT, double HW)
 {
     hweight = HW;
     metrictype = MT;

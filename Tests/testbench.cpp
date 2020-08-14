@@ -2,7 +2,7 @@
 #include "tinyxml2.h"
 #include <cassert>
 
-#define EPS 1e-5
+#define EPS 1e-3
 
 bool getRealResults(const char* fileName, float* realLen);
 

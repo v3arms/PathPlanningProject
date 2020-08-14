@@ -6,30 +6,30 @@
         <height>10</height>
         <cellsize>5</cellsize>
         <startx>2</startx>
-        <starty>1</starty>
-        <finishx>8</finishx>
-        <finishy>8</finishy>
+        <starty>3</starty>
+        <finishx>0</finishx>
+        <finishy>9</finishy>
         <grid>
             <row>0 0 0 0 0 0 0 0 0 0</row>
             <row>0 0 0 0 0 0 0 0 0 0</row>
             <row>0 1 1 1 1 1 1 0 1 1</row>
-            <row>0 0 0 0 0 0 0 0 0 0</row>
-            <row>0 0 0 0 0 0 0 0 0 0</row>
-            <row>0 0 0 0 0 0 0 0 0 0</row>
-            <row>0 0 0 0 0 0 0 0 0 0</row>
+            <row>0 1 0 0 0 1 0 0 0 0</row>
+            <row>0 1 0 0 0 1 0 0 0 0</row>
+            <row>0 1 0 0 0 1 0 0 0 0</row>
+            <row>0 0 1 1 1 1 0 0 0 0</row>
             <row>0 0 0 0 0 0 0 0 0 0</row>
             <row>0 0 0 0 0 0 0 0 0 0</row>
             <row>0 0 0 0 0 0 0 0 0 0</row>
         </grid>
     </map>
     <algorithm>
-        <metrictype>diagonal</metrictype>
+        <metrictype>euclidean</metrictype>
         <searchtype>astar</searchtype>
         <hweight>1</hweight>
-        <breakingties>g-max</breakingties>
-        <allowdiagonal>0</allowdiagonal>
-        <allowsqueeze>0</allowsqueeze>
-        <cutcorners>0</cutcorners>
+        <breakingties>g-min</breakingties>
+        <allowdiagonal>1</allowdiagonal>
+        <allowsqueeze>1</allowsqueeze>
+        <cutcorners>1</cutcorners>
     </algorithm>
     <options>
         <loglevel>0.5</loglevel>

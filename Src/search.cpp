@@ -63,7 +63,7 @@ SearchResult Search::startSearch(ILogger *Logger, const Map &map, const Environm
                 succGVal = succ_closed.g;
             
             // double newGVal = curr.g + calcHeuristic(map, {curr.i, curr.j}, succId, options.metrictype);
-            double newGVal = curr.g + getCost(map, {curr.i, curr.j}, succId);
+            double newGVal = curr.g + getCost(map, currId, succId);
             if (!succNodeExists || (succGVal > newGVal)) {
                 opened->insert({
                     succId.first,
@@ -84,6 +84,8 @@ SearchResult Search::startSearch(ILogger *Logger, const Map &map, const Environm
     sresult.time = std::chrono::duration<double>(timeEnd - timeBegin).count();
     sresult.hppath = &hppath; //Here is a constant pointer
     sresult.lppath = &lppath;
+    opened->clear();
+    closed->clear();
     return sresult;
 }
 
@@ -99,7 +101,6 @@ Node Search::breakTies(int mode) {
 
 
 Node Search::breakTies(int mode) {
-    // reusing successors buffer for tied nodes
     for_breakties.clear();
 
     Node chosen = opened->top_min_fval();
@@ -141,7 +142,6 @@ void Search::makePrimaryPath(const Map& map, Node node, const EnvironmentOptions
         sresult.pathlength += getCost(map, {bufnode.i, bufnode.j}, {node.i, node.j});
         node = *node.parent;
     }
-    LOG("Path length : " << lppath.size());
     hppath = lppath;
 }
 
@@ -150,23 +150,21 @@ void Search::makePrimaryPath(const Map& map, Node node, const EnvironmentOptions
     //need to implement
 }*/
 
-float Search::calcHeuristic(const Map& map, const nodeId& x, const nodeId& y, int metrictype) {
-    double ds, df;
+double Search::calcHeuristic(const Map& map, const nodeId& x, const nodeId& y, int metrictype) {
+    double ds = abs(x.second - y.second), 
+           df = abs(x.first - y.first);
+
     switch(metrictype) {
         case CN_SP_MT_EUCL :
-            return sqrt(
-                (x.first - y.first)*(x.first - y.first) + (x.second - y.second)*(x.second - y.second)
-            );
+            return sqrt(df*df + ds*ds);
 
         case CN_SP_MT_MANH :
-            return (abs(x.first - y.first) + abs(x.second - y.second));
+            return (df + ds);
 
         case CN_SP_MT_CHEB :
-            return std::max(abs(x.first - y.first), abs(x.second - y.second));
+            return std::max(df, ds);
 
         case CN_SP_MT_DIAG :
-            df = abs(x.first - y.first),
-            ds = abs(x.second - y.second);
             return std::min(df, ds)*sqrt(2.0) + abs(df - ds);
 
         default :
@@ -214,7 +212,7 @@ void Search::getSuccessors(const Map& map, const nodeId& id, const EnvironmentOp
 }
 
 
-float Search::getCost(const Map& map, const nodeId& x, const nodeId& y) {
+double Search::getCost(const Map& map, const nodeId& x, const nodeId& y) {
     if ((x.first == y.first) || (x.second == y.second))
         return 1;
     else

@@ -35,8 +35,8 @@ class Search
         //and only then begin enhancement!
 
 
-        float calcHeuristic(const Map& map, const nodeId& from, const nodeId& to, int metrictype = CN_SP_MT_EUCL);
-        float getCost(const Map& map, const nodeId& x, const nodeId& y);
+        double calcHeuristic(const Map& map, const nodeId& from, const nodeId& to, int metrictype = CN_SP_MT_EUCL);
+        double getCost(const Map& map, const nodeId& x, const nodeId& y);
         void getSuccessors(const Map&, const nodeId& id, const EnvironmentOptions& opts);
         bool cellAvailable(const Map& map, const nodeId& id);
         void makePrimaryPath(const Map& map, Node node, const EnvironmentOptions& options);

@@ -5,7 +5,7 @@
 class EnvironmentOptions
 {
 public:
-    EnvironmentOptions(bool AS, bool AD, bool CC, int MT = CN_SP_MT_EUCL, int GT = CN_SP_BT_GMIN, int HW = 1.0);
+    EnvironmentOptions(bool AS, bool AD, bool CC, int MT = CN_SP_MT_EUCL, int GT = CN_SP_BT_GMIN, double HW = 1.0);
     EnvironmentOptions();
     int     metrictype;     //Can be chosen Euclidean, Manhattan, Chebyshev and Diagonal distance
     int     gtype;
