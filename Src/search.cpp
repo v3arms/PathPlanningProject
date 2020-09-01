@@ -73,8 +73,6 @@ SearchResult Search::startSearch(ILogger *Logger, const Map &map, const Environm
                     0,
                     &closed->find(currId)
                 });
-                if (!succNodeExists)
-                    sresult.nodescreated++;
             }
         }
         sresult.numberofsteps++;
@@ -82,6 +80,7 @@ SearchResult Search::startSearch(ILogger *Logger, const Map &map, const Environm
 
     std::chrono::steady_clock::time_point timeEnd = std::chrono::steady_clock::now();
     sresult.time = std::chrono::duration<double>(timeEnd - timeBegin).count();
+    sresult.nodescreated = opened->size() + closed->size();
     sresult.hppath = &hppath; //Here is a constant pointer
     sresult.lppath = &lppath;
     opened->clear();

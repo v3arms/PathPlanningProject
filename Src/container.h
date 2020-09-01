@@ -4,10 +4,11 @@
 
 #include "node.h"
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <queue>
 #include <functional>
 #include <iostream>
+#include <utility>
 
 
 const int   DefaultPreallocSize  = 1000000;
@@ -45,6 +46,7 @@ public :
     virtual const Node& find(const nodeId& x) const = 0;
     virtual ~openedContainer() {};
     virtual const Node& end() const = 0;
+    virtual size_t size() const = 0;
 
 };
 
@@ -58,6 +60,7 @@ public :
     virtual bool empty() const = 0;
     virtual ~closedContainer() {};
     virtual const Node& end() const = 0;
+    virtual size_t size() const = 0;
 
 };
 

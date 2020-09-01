@@ -1,11 +1,21 @@
 #include "container_simple.h"
 
 
+template<typename TFirst, typename TSecond>
+size_t hash_pair::operator()(const std::pair<TFirst, TSecond>& p) const noexcept {
+    uintmax_t hash = std::hash<TFirst>()(p.first);
+    hash <<= sizeof(uintmax_t) * 4;
+    hash ^= std::hash<TSecond>()(p.second);
+    return std::hash<uintmax_t>()(hash);
+}
+
+
 /*
     opened impl
 */
 simpleOpened::simpleOpened()
-: _end(__default_end_node_opened)
+: data(__alloc_size)
+, _end(__default_end_node_opened)
 {}
 
 
@@ -59,6 +69,11 @@ const Node& simpleOpened::end() const {
 }
 
 
+size_t simpleOpened::size() const {
+    return data.size();
+}
+
+
 /*
     closed impl
 */
@@ -106,4 +121,9 @@ bool operator != (const Node& x, const Node& y) {
 
 const Node& simpleClosed::end() const {
     return _end;
+}
+
+
+size_t simpleClosed::size() const {
+    return data.size();
 }
