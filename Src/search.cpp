@@ -89,16 +89,16 @@ SearchResult Search::startSearch(ILogger *Logger, const Map &map, const Environm
 }
 
 
-/*
+
 Node Search::breakTies(int mode) {
     Node n = opened->top_min_fval();
     opened->pop_min_fval();
     return n;
 }
-*/
 
 
 
+/*
 Node Search::breakTies(int mode) {
     for_breakties.clear();
 
@@ -130,6 +130,7 @@ Node Search::breakTies(int mode) {
     }
     return chosen;
 }
+*/
 
 
 void Search::makePrimaryPath(const Map& map, Node node, const EnvironmentOptions& options) {
